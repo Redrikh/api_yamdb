@@ -8,14 +8,22 @@ from reviews.models import (
     Review,
     Comment,
 )
-from user.models import User
+from users.models import User
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """Сериализатор для пользователя."""
+
+    class Meta:
+        fields = ('bio', 'email', 'first_name', 'last_name', 'role', 'username',)
+        model = User
 
 
 class CategorieSerializer(serializers.ModelSerializer):
     """Сериализатор для категорий."""
 
     class Meta:
-        fields = '__all__'
+        fields = ('name', 'slug',)
         model = Category
 
 
@@ -23,7 +31,7 @@ class GenreSerializer(serializers.ModelSerializer):
     """Сериализатор для жанров."""
 
     class Meta:
-        fields = '__all__'
+        fields = ('name', 'slug',)
         model = Genre
 
 
@@ -62,11 +70,3 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Comment
-
-
-class UserSerializer(serializers.ModelSerializer):
-    """Сериализатор для пользователя."""
-
-    class Meta:
-        fields = '__all__'
-        model = User

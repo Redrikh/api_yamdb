@@ -1,4 +1,4 @@
-from rest_framework.routers import SimpleRouter
+from rest_framework.routers import DefaultRouter
 from django.urls import include, path
 
 from .views import (
@@ -6,14 +6,15 @@ from .views import (
     GenreViewSet,
     TitleViewSet,
     ReviewViewSet,
-    UserViewSet,
-    CommentViewSet
+    UsersViewSet,
+    CommentViewSet,
+    TargetUserViewSet,
 )
 
-router = SimpleRouter()
+router = DefaultRouter()
 
-
-router.register('users', UserViewSet)
+router.register('users', UsersViewSet)
+#router.register(r'users/(?P<username>[\w.@+-]+)/', TargetUserViewSet, basename='users')
 router.register('categories', CategoryViewSet)
 router.register('genres', GenreViewSet)
 router.register('titles', TitleViewSet, basename='titles')

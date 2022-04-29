@@ -1,15 +1,18 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, permissions
-from rest_framework.pagination import LimitOffsetPagination
+from requests import Response
+from rest_framework import viewsets, permissions, status
+from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
+from rest_framework.decorators import action
 
 from reviews.models import (
     Category,
     Genre,
     Title,
     Review,
-    User,
 )
+from users.models import User
 from .permissions import (
+    IsAdmin,
     IsAdminOrReadOnly,
     IsModeratorOrReadOnly,
     IsOwnerOrReadOnly,
@@ -24,16 +27,59 @@ from .serializers import (
 )
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UsersViewSet(viewsets.ModelViewSet):
     """Вьюсет для пользователей."""
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [
-        permissions.IsAdminUser,
+        IsAdmin,
     ]
-    pagination_class = LimitOffsetPagination
+    pagination_class = PageNumberPagination
     search_fields = ('user__username')
+
+    def retrieve(self, request, pk=None):
+        queryset = User.objects.all()
+        user = get_object_or_404(queryset, username=request)
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get', 'patch', ])
+    def me(self, request):
+        user = User.objects.get(id=request.user.id)
+        if request.method == 'patch':
+            serializer = self.get_serializer(user, data=request.data, partial=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = self.get_serializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class TargetUserViewSet(viewsets.ModelViewSet):
+
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [
+        permissions.IsAuthenticated,
+    ]
+    pagination_class = PageNumberPagination
+    search_fields = ('user__username')
+
+    def retrieve(self, request, pk=None):
+        queryset = User.objects.all()
+        user = get_object_or_404(queryset, username=request)
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+
+    @action(detail=True, url_path='me')
+    def get_me(self, request):
+        user = User.objects.get(id=request.user.id)
+        if request.method == 'patch':
+            serializer = self.get_serializer(user, data=request.data, partial=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = self.get_serializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -45,6 +91,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
         IsAdminOrReadOnly,
     ]
     pagination_class = LimitOffsetPagination
+    search_fields = ('category__slug')
 
 
 class GenreViewSet(viewsets.ModelViewSet):
@@ -55,6 +102,8 @@ class GenreViewSet(viewsets.ModelViewSet):
     permission_classes = [
         IsAdminOrReadOnly,
     ]
+    pagination_class = PageNumberPagination
+    search_fields = ('genre__slug')
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -65,6 +114,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = [
         IsAdminOrReadOnly,
     ]
+    pagination_class = PageNumberPagination
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -88,17 +138,3 @@ class CommentViewSet(viewsets.ModelViewSet):
         IsModeratorOrReadOnly,
         IsOwnerOrReadOnly,
     ]
-
-    def get_queryset(self):
-        review = get_object_or_404(
-            Review,
-            pk=self.kwargs.get('review_id')
-        )
-        return review.comments.all()
-
-    def perform_create(self, serializer):
-        review = get_object_or_404(
-            Review,
-            pk=self.kwargs.get('review_id')
-        )
-        serializer.save(author=self.request.user, review=review)
