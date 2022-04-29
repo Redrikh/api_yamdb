@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from djoser.serializers import UserSerializer
 
 from reviews.models import (
     Category,
@@ -51,21 +50,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
 
 
-class AuthSerializer(serializers.ModelSerializer):
-    """Сериализатор для Auth."""
-
-    class Meta:
-        fields = '__all__'
-        model = User
-
-
 class CommentSerializer(serializers.ModelSerializer):
     """Сериализатор для комментариев."""
-
-    author = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field='username'
-    )
 
     class Meta:
         fields = '__all__'

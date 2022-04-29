@@ -14,7 +14,6 @@ from .views import (
 router = DefaultRouter()
 
 router.register('users', UsersViewSet)
-#router.register(r'users/(?P<username>[\w.@+-]+)/', TargetUserViewSet, basename='users')
 router.register('categories', CategoryViewSet)
 router.register('genres', GenreViewSet)
 router.register('titles', TitleViewSet, basename='titles')

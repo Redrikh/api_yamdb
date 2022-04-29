@@ -15,7 +15,6 @@ from .permissions import (
     IsAdmin,
     IsAdminOrReadOnly,
     IsModeratorOrReadOnly,
-    IsOwnerOrReadOnly,
 )
 from .serializers import (
     CategorieSerializer,
@@ -56,6 +55,7 @@ class UsersViewSet(viewsets.ModelViewSet):
 
 
 class TargetUserViewSet(viewsets.ModelViewSet):
+    """Тестовый вьюсет, нужно будет удалить."""
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -125,7 +125,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
     permission_classes = [
         IsAdminOrReadOnly,
         IsModeratorOrReadOnly,
-        IsOwnerOrReadOnly,
     ]
 
 
@@ -136,5 +135,4 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = [
         IsAdminOrReadOnly,
         IsModeratorOrReadOnly,
-        IsOwnerOrReadOnly,
     ]
