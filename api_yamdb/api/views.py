@@ -9,12 +9,14 @@ from reviews.models import (
     Genre,
     Title,
     Review,
+    Comment,
 )
 from users.models import User
 from .permissions import (
     IsAdmin,
     IsAdminOrReadOnly,
     IsModeratorOrReadOnly,
+    IsUserOrStaff,
 )
 from .serializers import (
     CategorieSerializer,
@@ -130,9 +132,18 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     """Вьюсет для комментариев."""
-
+    #queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [
-        IsAdminOrReadOnly,
-        IsModeratorOrReadOnly,
+        IsUserOrStaff,
     ]
+    pagination_class = PageNumberPagination
+
+    def get_queryset(self):
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        return review.comments.all()
+
+    def perform_create(self, serializer):
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        serializer.save(author=self.request.user, review=review)
+
