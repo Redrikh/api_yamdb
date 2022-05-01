@@ -3,6 +3,7 @@ from requests import Response
 from rest_framework import viewsets, permissions, status
 from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 
 from reviews.models import (
     Category,
@@ -132,7 +133,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     """Вьюсет для комментариев."""
-    #queryset = Comment.objects.all()
+
     serializer_class = CommentSerializer
     permission_classes = [
         IsUserOrStaff,
@@ -141,9 +142,13 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
-        return review.comments.all()
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        title_id = self.kwargs.get('title_id')
+        review_id = self.kwargs.get('review_id')
+        if not title.reviews.filter(id=review_id).exists():
+            raise NotFound()
+        return review.comments.filter(review__title_id=title_id)
 
     def perform_create(self, serializer):
         review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
         serializer.save(author=self.request.user, review=review)
-
