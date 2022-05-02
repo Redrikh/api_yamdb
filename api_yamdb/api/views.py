@@ -1,10 +1,13 @@
 from django.shortcuts import get_object_or_404
-from requests import Response
+from requests import Response, request
 from rest_framework import viewsets, status, filters
 from rest_framework.pagination import (
     LimitOffsetPagination,
     PageNumberPagination,
 )
+from rest_framework.exceptions import NotFound
+from rest_framework.decorators import action
+
 from reviews.models import (
     Category,
     Genre,
@@ -39,12 +42,9 @@ class UsersViewSet(viewsets.ModelViewSet):
     search_fields = ('user__username')
     lookup_field = 'username'
 
-    def get_username(self):
-        username = self.kwargs.get('username')
-        if username == 'me':
-            user = self.request.user
-        else:
-            user = get_object_or_404(User, username=username)
+    @action(detail=True, url_path='me')
+    def me(self, request):
+        user = User.objects.get(id=request.user.id)
         serializer = UserSerializer(user)
         return Response(serializer.data)
 
@@ -60,15 +60,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
-    lookup_field = 'slug'
-
-    def get_slug(self):
-        category_name = self.kwargs.get('slug')
-        category = Category.objects.get(slug=category_name)
-        if category:
-            serializer = CategorieSerializer(category)
-            return Response(serializer.data)
-        return(Response(status=status.HTTP_405_METHOD_NOT_ALLOWED))
 
 
 class GenreViewSet(viewsets.ModelViewSet):

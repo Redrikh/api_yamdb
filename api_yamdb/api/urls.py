@@ -12,10 +12,10 @@ from .views import (
 
 router = DefaultRouter()
 
-router.register('users', UsersViewSet)
-router.register('categories', CategoryViewSet)
-router.register('genres', GenreViewSet)
-router.register('titles', TitleViewSet, basename='titles')
+router.register(r'users', UsersViewSet, basename='users')
+router.register(r'categories', CategoryViewSet)
+router.register(r'genres', GenreViewSet)
+router.register(r'titles', TitleViewSet, basename='titles')
 router.register(
     r'titles/(?P<title_id>\d+)/reviews',
     ReviewViewSet,
@@ -33,7 +33,6 @@ urlpatterns = [
     path('v1/auth/', include('djoser.urls')),
     path('v1/auth/', include('djoser.urls.authtoken')),
     path('v1/auth/', include('djoser.urls.jwt')),
-    path('v1/users/<username>', UsersViewSet.as_view({'get': 'retrieve'})),
     path('v1/categories/<slug>', CategoryViewSet.as_view({'get': 'retrieve'})),
     path('v1/genres/<slug>', GenreViewSet.as_view({'get': 'retrieve'})),
 ]
