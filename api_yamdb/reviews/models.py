@@ -15,7 +15,7 @@ CHOICES = (
     ('8', '8'),
     ('9', '9'),
     ('10', '10'),
-    )
+)
 
 
 class Genre(models.Model):
@@ -140,5 +140,3 @@ class Comment(models.Model):
 
     def __str__(self):
         return self.text[:25]
-
-
