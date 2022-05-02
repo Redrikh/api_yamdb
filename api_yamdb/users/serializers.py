@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import User
 
@@ -38,5 +39,6 @@ class TokenObtainSerializer(TokenObtainPairSerializer):
             raise serializers.ValidationError(
                 'Wrong confirmation code!'
             )
-        refresh = self.get_token(current_user)
+        refresh = RefreshToken.for_user(current_user)
+        # self.get_token(current_user)
         return {'token': str(refresh.access_token)}
