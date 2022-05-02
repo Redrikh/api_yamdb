@@ -8,7 +8,6 @@ from .views import (
     ReviewViewSet,
     UsersViewSet,
     CommentViewSet,
-    TargetUserViewSet,
 )
 
 router = DefaultRouter()
@@ -34,4 +33,7 @@ urlpatterns = [
     path('v1/auth/', include('djoser.urls')),
     path('v1/auth/', include('djoser.urls.authtoken')),
     path('v1/auth/', include('djoser.urls.jwt')),
+    path('v1/users/<username>', UsersViewSet.as_view({'get': 'retrieve'})),
+    path('v1/categories/<slug>', CategoryViewSet.as_view({'get': 'retrieve'})),
+    path('v1/genres/<slug>', GenreViewSet.as_view({'get': 'retrieve'})),
 ]

@@ -1,8 +1,10 @@
 from django.shortcuts import get_object_or_404
 from requests import Response
-from rest_framework import viewsets, permissions, status
-from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
-from rest_framework.decorators import action
+from rest_framework import viewsets
+from rest_framework.pagination import (
+    LimitOffsetPagination,
+    PageNumberPagination,
+)
 
 from reviews.models import (
     Category,
@@ -36,50 +38,15 @@ class UsersViewSet(viewsets.ModelViewSet):
     ]
     pagination_class = PageNumberPagination
     search_fields = ('user__username')
+    lookup_field = 'username'
 
-    def retrieve(self, request, pk=None):
-        queryset = User.objects.all()
-        user = get_object_or_404(queryset, username=request)
+    def get_username(self):
+        username = self.kwargs.get('username')
+        if username == 'me':
+            username = self.request.user.username
+        user = get_object_or_404(User, username=username)
         serializer = UserSerializer(user)
         return Response(serializer.data)
-
-    @action(detail=True, methods=['get', 'patch', ])
-    def me(self, request):
-        user = User.objects.get(id=request.user.id)
-        if request.method == 'patch':
-            serializer = self.get_serializer(user, data=request.data, partial=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        serializer = self.get_serializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class TargetUserViewSet(viewsets.ModelViewSet):
-    """Тестовый вьюсет, нужно будет удалить."""
-
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [
-        permissions.IsAuthenticated,
-    ]
-    pagination_class = PageNumberPagination
-    search_fields = ('user__username')
-
-    def retrieve(self, request, pk=None):
-        queryset = User.objects.all()
-        user = get_object_or_404(queryset, username=request)
-        serializer = UserSerializer(user)
-        return Response(serializer.data)
-
-    @action(detail=True, url_path='me')
-    def get_me(self, request):
-        user = User.objects.get(id=request.user.id)
-        if request.method == 'patch':
-            serializer = self.get_serializer(user, data=request.data, partial=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        serializer = self.get_serializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -91,7 +58,14 @@ class CategoryViewSet(viewsets.ModelViewSet):
         IsAdminOrReadOnly,
     ]
     pagination_class = LimitOffsetPagination
-    search_fields = ('category__slug')
+    filter_fields = ('category__slug')
+    lookup_field = 'slug'
+
+    def get_slug(self):
+        category_name = self.kwargs.get('slug')
+        category = get_object_or_404(Category, slug=category_name)
+        serializer = CategorieSerializer(category)
+        return Response(serializer.data)
 
 
 class GenreViewSet(viewsets.ModelViewSet):
@@ -104,6 +78,13 @@ class GenreViewSet(viewsets.ModelViewSet):
     ]
     pagination_class = PageNumberPagination
     search_fields = ('genre__slug')
+    lookup_field = 'slug'
+
+    def get_slug(self):
+        genre_name = self.kwargs.get('slug')
+        genre = get_object_or_404(Genre, slug=genre_name)
+        serializer = CategorieSerializer(genre)
+        return Response(serializer.data)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
