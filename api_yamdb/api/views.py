@@ -1,11 +1,10 @@
 from django.shortcuts import get_object_or_404
 from requests import Response
-from rest_framework import viewsets
+from rest_framework import viewsets, status, filters
 from rest_framework.pagination import (
     LimitOffsetPagination,
     PageNumberPagination,
 )
-
 from reviews.models import (
     Category,
     Genre,
@@ -43,8 +42,9 @@ class UsersViewSet(viewsets.ModelViewSet):
     def get_username(self):
         username = self.kwargs.get('username')
         if username == 'me':
-            username = self.request.user.username
-        user = get_object_or_404(User, username=username)
+            user = self.request.user
+        else:
+            user = get_object_or_404(User, username=username)
         serializer = UserSerializer(user)
         return Response(serializer.data)
 
@@ -58,14 +58,17 @@ class CategoryViewSet(viewsets.ModelViewSet):
         IsAdminOrReadOnly,
     ]
     pagination_class = LimitOffsetPagination
-    filter_fields = ('category__slug')
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
     lookup_field = 'slug'
 
     def get_slug(self):
         category_name = self.kwargs.get('slug')
-        category = get_object_or_404(Category, slug=category_name)
-        serializer = CategorieSerializer(category)
-        return Response(serializer.data)
+        category = Category.objects.get(slug=category_name)
+        if category:
+            serializer = CategorieSerializer(category)
+            return Response(serializer.data)
+        return(Response(status=status.HTTP_405_METHOD_NOT_ALLOWED))
 
 
 class GenreViewSet(viewsets.ModelViewSet):
@@ -77,7 +80,8 @@ class GenreViewSet(viewsets.ModelViewSet):
         IsAdminOrReadOnly,
     ]
     pagination_class = PageNumberPagination
-    search_fields = ('genre__slug')
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
     lookup_field = 'slug'
 
     def get_slug(self):
