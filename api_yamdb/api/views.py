@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from requests import Response, request
-from rest_framework import viewsets, status, filters
+from rest_framework import viewsets, status, filters, permissions
 from rest_framework.pagination import (
     LimitOffsetPagination,
     PageNumberPagination,
@@ -42,9 +42,14 @@ class UsersViewSet(viewsets.ModelViewSet):
     search_fields = ('user__username')
     lookup_field = 'username'
 
-    @action(detail=True, url_path='me')
-    def me(self, request):
-        user = User.objects.get(id=request.user.id)
+    @action(
+        detail=False,
+        url_path='me',
+        methods=['get', 'patch'],
+        permission_classes=[permissions.IsAuthenticated, ],
+    )
+    def me(self, request, *args, **kwargs):
+        user = self.request.user
         serializer = UserSerializer(user)
         return Response(serializer.data)
 
