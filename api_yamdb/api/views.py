@@ -43,13 +43,13 @@ class UsersViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
 
     @action(
-        detail=False,
+        detail=True,
         url_path='me',
         methods=['get', 'patch'],
         permission_classes=[permissions.IsAuthenticated, ],
     )
     def me(self, request, *args, **kwargs):
-        user = self.request.user
+        user = request.user
         serializer = UserSerializer(user)
         return Response(serializer.data)
 

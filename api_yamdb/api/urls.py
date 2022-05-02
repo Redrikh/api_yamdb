@@ -12,7 +12,7 @@ from .views import (
 
 router = DefaultRouter()
 
-router.register(r'users', UsersViewSet, basename='user')
+router.register(r'users', UsersViewSet, basename='user-detail')
 router.register(r'categories', CategoryViewSet)
 router.register(r'genres', GenreViewSet)
 router.register(r'titles', TitleViewSet, basename='titles')
@@ -33,6 +33,4 @@ urlpatterns = [
     path('v1/auth/', include('djoser.urls')),
     path('v1/auth/', include('djoser.urls.authtoken')),
     path('v1/auth/', include('djoser.urls.jwt')),
-    path('v1/categories/<slug>', CategoryViewSet.as_view({'get': 'retrieve'})),
-    path('v1/genres/<slug>', GenreViewSet.as_view({'get': 'retrieve'})),
 ]
