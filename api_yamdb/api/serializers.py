@@ -14,7 +14,14 @@ class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для пользователя."""
 
     class Meta:
-        fields = ('username', 'bio', 'email', 'first_name', 'last_name', 'role',)
+        fields = (
+            'username',
+            'bio',
+            'email',
+            'first_name',
+            'last_name',
+            'role'
+        )
         model = User
 
 
@@ -52,7 +59,10 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     """Сериализатор для комментариев."""
+    author = serializers.SlugRelatedField(
+        read_only=True, slug_field='username'
+    )
 
     class Meta:
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'pub_date')
         model = Comment

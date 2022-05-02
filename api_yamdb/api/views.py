@@ -1,12 +1,14 @@
 from django.shortcuts import get_object_or_404
-from requests import Response, request
-from rest_framework import viewsets, status, filters, permissions
+from django.core.exceptions import PermissionDenied
+from requests import Response
+from rest_framework import viewsets, filters, permissions
 from rest_framework.pagination import (
     LimitOffsetPagination,
     PageNumberPagination,
 )
 from rest_framework.exceptions import NotFound
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 
 from reviews.models import (
     Category,
@@ -19,6 +21,7 @@ from .permissions import (
     IsAdmin,
     IsAdminOrReadOnly,
     IsModeratorOrReadOnly,
+    IsUserOrStaff,
 )
 from .serializers import (
     CategorieSerializer,
@@ -114,6 +117,24 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     serializer_class = CommentSerializer
     permission_classes = [
-        IsAdminOrReadOnly,
-        IsModeratorOrReadOnly,
+        IsUserOrStaff,
     ]
+    pagination_class = PageNumberPagination
+
+    def get_queryset(self):
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        title_id = self.kwargs.get('title_id')
+        review_id = self.kwargs.get('review_id')
+        if not title.reviews.filter(id=review_id).exists():
+            raise NotFound()
+        return review.comments.filter(review__title_id=title_id)
+
+    def perform_create(self, serializer):
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        serializer.save(author=self.request.user, review=review)
+
+    def perform_update(self, serializer):
+        if serializer.instance.author != self.request.user:
+            raise PermissionDenied('Изменение чужого контента запрещено!')
+        super(CommentViewSet, self).perform_update(serializer)
