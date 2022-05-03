@@ -7,7 +7,6 @@ from rest_framework.pagination import (
 )
 from rest_framework.exceptions import NotFound
 from rest_framework.decorators import action
-from rest_framework.exceptions import NotFound
 
 from reviews.models import (
     Category,
