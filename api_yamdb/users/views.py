@@ -11,17 +11,23 @@ from .models import User
 @api_view(['POST'])
 def register_user(request):
     """ Регистрация нового пользователя. """
-
     serializer = CreateUserSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        current_user = User.objects.last()
+    try:
+        user = User.objects.get(email=serializer.initial_data['username'])
+    except Exception:
+        user = None
+    if (
+        serializer.is_valid()
+        or (user and user.email == serializer.initial_data['email'])
+    ):
+        if not user:
+            user = serializer.save()
         send_mail(
             'Registration on YaMDb',
             f'Your verification code to receive a token: '
-            f'{current_user.confirmation_code}',
+            f'{user.confirmation_code}',
             'YaMDb@example.com',
-            [current_user.email],
+            [user.email],
             fail_silently=False,
         )
         return Response(
