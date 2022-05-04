@@ -1,12 +1,12 @@
 from django.shortcuts import get_object_or_404
-from requests import Response
-from rest_framework import viewsets, filters, permissions
+from rest_framework import viewsets, filters, permissions, status
 from rest_framework.pagination import (
     LimitOffsetPagination,
     PageNumberPagination,
 )
 from rest_framework.exceptions import NotFound
 from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from reviews.models import (
     Category,
@@ -21,7 +21,7 @@ from .permissions import (
     IsUserOrStaff,
 )
 from .serializers import (
-    CategorieSerializer,
+    CategorySerializer,
     GenreSerializer,
     TitleSerializer,
     ReviewSerializer,
@@ -43,34 +43,54 @@ class UsersViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
 
     @action(
-        detail=True,
-        url_path='me',
+        detail=False,
         methods=['get', 'patch'],
-        permission_classes=[permissions.IsAuthenticated, ],
+        url_path='me',
+        permission_classes=(permissions.IsAuthenticated,),
     )
-    def me(self, request, *args, **kwargs):
-        user = request.user
-        serializer = UserSerializer(user)
-        return Response(serializer.data)
+    def me(self, request):
+        serializer = UserSerializer(request.user)
+        if request.method == 'PATCH':
+            if request.data.get('role') == 'admin':
+                return Response(
+                    serializer.data,
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            serializer = UserSerializer(
+                request.user,
+                data=request.data,
+                partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
     """Вьюсет для категорий."""
 
-    queryset = Category.objects.all()
-    serializer_class = CategorieSerializer
+    queryset = Category.objects.all().order_by('id')
+    serializer_class = CategorySerializer
     permission_classes = [
         IsAdminOrReadOnly,
     ]
     pagination_class = LimitOffsetPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
+    lookup_field = 'slug'
+
+    def retrieve(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def update(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class GenreViewSet(viewsets.ModelViewSet):
     """Вьюсет для жанров."""
 
-    queryset = Genre.objects.all()
+    queryset = Genre.objects.all().order_by('id')
     serializer_class = GenreSerializer
     permission_classes = [
         IsAdminOrReadOnly,
@@ -80,11 +100,11 @@ class GenreViewSet(viewsets.ModelViewSet):
     search_fields = ('name',)
     lookup_field = 'slug'
 
-    def get_slug(self):
-        genre_name = self.kwargs.get('slug')
-        genre = get_object_or_404(Genre, slug=genre_name)
-        serializer = CategorieSerializer(genre)
-        return Response(serializer.data)
+    def retrieve(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def update(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -96,6 +116,9 @@ class TitleViewSet(viewsets.ModelViewSet):
         IsAdminOrReadOnly,
     ]
     pagination_class = PageNumberPagination
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    lookup_field = 'slug'
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

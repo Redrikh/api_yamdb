@@ -1,13 +1,6 @@
 from rest_framework import permissions
 
 
-class IsSuperUser(permissions.IsAdminUser):
-    """Пермишн проверки суперюзера."""
-
-    def has_permission(self, request, view):
-        return request.user.is_superuser
-
-
 class IsAdminOrReadOnly(permissions.IsAdminUser):
     """Пермишн для рид-онли, админ с полными правами."""
 
@@ -60,7 +53,11 @@ class IsModeratorOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
-        return request.user.role == 'moderator'
+        return (
+            request.user.role == 'moderator'
+            or request.user.role == 'admin'
+            or request.user.is_superuser
+        )
 
 
 class IsUserOrStaff(permissions.BasePermission):

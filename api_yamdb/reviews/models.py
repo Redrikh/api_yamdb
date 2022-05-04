@@ -49,8 +49,12 @@ class Title(models.Model):
     name = models.CharField(
         max_length=200,
     )
+    slug = models.SlugField(
+        max_length=50,
+        unique=True,
+    )
     year = models.IntegerField()
-    categories = models.ForeignKey(
+    category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
         null=True,
@@ -66,8 +70,8 @@ class Title(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['name', 'categories'],
-                name='unique_name_categories'
+                fields=['name', 'category'],
+                name='unique_name_category'
             )
         ]
 

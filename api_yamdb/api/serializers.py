@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from reviews.models import (
@@ -7,7 +8,7 @@ from reviews.models import (
     Review,
     Comment,
 )
-from users.models import User
+User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -24,8 +25,15 @@ class UserSerializer(serializers.ModelSerializer):
         )
         model = User
 
+    def validate_username(self, value):
+        if value == 'me':
+            raise serializers.ValidationError(
+                'Создать пользователя me нельзя'
+            )
+        return value
 
-class CategorieSerializer(serializers.ModelSerializer):
+
+class CategorySerializer(serializers.ModelSerializer):
     """Сериализатор для категорий."""
 
     class Meta:
@@ -45,7 +53,7 @@ class TitleSerializer(serializers.ModelSerializer):
     """Сериализатор для заголовка."""
 
     class Meta:
-        fields = '__all__'
+        fields = ('name', 'slug',)
         model = Title
 
 
