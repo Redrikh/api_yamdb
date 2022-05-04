@@ -118,7 +118,6 @@ class TitleViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
-    lookup_field = 'title_id'
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
