@@ -63,8 +63,8 @@ class IsModeratorOrReadOnly(permissions.BasePermission):
         return request.user.role == 'moderator'
 
 
-class IsAuthorOrReadOnly(permissions.BasePermission):
-    """Пермишн для авторов"""
+class IsAuthorOrStaff(permissions.BasePermission):
+    """Пермишн для комментариев"""
 
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
@@ -75,4 +75,7 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
         return (
             request.method in permissions.SAFE_METHODS
             or obj.author == request.user
+            or request.user.role == 'moderator'
+            or request.user.role == 'admin'
+            or request.user.is_superuser
         )

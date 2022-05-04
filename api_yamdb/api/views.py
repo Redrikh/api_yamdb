@@ -19,7 +19,8 @@ from users.models import User
 from .permissions import (
     IsAdmin,
     IsAdminOrReadOnly,
-    IsAuthorOrReadOnly,
+    IsAuthorOrStaff,
+    IsModerator,
 )
 from .serializers import (
     CategorieSerializer,
@@ -104,7 +105,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     serializer_class = ReviewSerializer
     permission_classes = [
-        IsAuthorOrReadOnly,
+        IsAuthorOrStaff,
     ]
 
     def get_title(self):
@@ -122,7 +123,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     serializer_class = CommentSerializer
     permission_classes = [
-        IsAuthorOrReadOnly,
+        IsAuthorOrStaff,
     ]
     pagination_class = PageNumberPagination
 
