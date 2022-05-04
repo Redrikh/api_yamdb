@@ -1,7 +1,6 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import include, path
-from users import views
-from users.views import TokenObtainView
+from users.views import TokenObtainView, register_user
 
 from .views import (
     CategoryViewSet,
@@ -34,7 +33,7 @@ urlpatterns = [
     path('v1/auth/', include('djoser.urls')),
     path('v1/auth/', include('djoser.urls.authtoken')),
     path('v1/auth/', include('djoser.urls.jwt')),
-    path('v1/auth/signup/', views.register_user, name='registration'),
+    path('v1/auth/signup/', register_user, name='registration'),
     path(
         'v1/auth/token/',
         TokenObtainView.as_view(),

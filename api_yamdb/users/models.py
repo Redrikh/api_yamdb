@@ -19,6 +19,10 @@ class User(AbstractUser):
         choices=ROLE_CHOICES,
         default='user',
     )
+    confirmation_code = models.CharField(
+        max_length=6,
+        blank=True
+    )
 
     class Meta:
         ordering = ['username']

@@ -21,6 +21,7 @@ def generate_confirmation_code() -> str:
 @api_view(['POST'])
 def register_user(request):
     """ Регистрация нового пользователя. """
+
     serializer = CreateUserSerializer(data=request.data)
     try:
         user = User.objects.get(username=request.data['username'])
