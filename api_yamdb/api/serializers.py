@@ -53,7 +53,7 @@ class TitleSerializer(serializers.ModelSerializer):
     """Сериализатор для заголовка."""
 
     class Meta:
-        fields = ('name', 'slug',)
+        fields = ('id', 'name', 'year',)
         model = Title
 
 
