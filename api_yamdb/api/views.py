@@ -7,6 +7,7 @@ from rest_framework.pagination import (
 from rest_framework.exceptions import NotFound
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.db.models import Avg
 
 from reviews.models import (
     Category,
@@ -110,7 +111,9 @@ class GenreViewSet(viewsets.ModelViewSet):
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для заголовков."""
 
-    queryset = Title.objects.all()
+    queryset = Title.objects.all().annotate(
+        Avg('reviews__score')
+    ).order_by('name')
     serializer_class = TitleSerializer
     permission_classes = [
         IsAdminOrReadOnly,

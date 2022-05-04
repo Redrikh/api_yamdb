@@ -51,9 +51,13 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class TitleSerializer(serializers.ModelSerializer):
     """Сериализатор для заголовка."""
+    rating = serializers.IntegerField(
+        source='reviews__score__avg',
+        read_only=True,
+    )
 
     class Meta:
-        fields = ('id', 'name', 'year',)
+        fields = ('id', 'name', 'year', 'rating',)
         model = Title
 
 
