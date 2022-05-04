@@ -62,6 +62,15 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = '__all__'
         model = Review
 
+    def validate(self, data):
+        request = self.context.get('request')
+        queryset = self.context.get('view').get_queryset()
+        if queryset.filter(author=request.user).exists():
+            raise serializers.ValidationError(
+                'Нельзя оставлять больше 1 отзыва на произведение'
+            )
+        return data
+
 
 class CommentSerializer(serializers.ModelSerializer):
     """Сериализатор для комментариев."""
