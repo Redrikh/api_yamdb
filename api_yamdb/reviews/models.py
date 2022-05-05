@@ -56,11 +56,14 @@ class Title(models.Model):
         null=True,
         related_name='titles',
     )
-    genres = models.ManyToManyField(
+    genre = models.ManyToManyField(
         Genre,
         through='GenreTitle',
         through_fields=('title', 'genre'),
         related_name='titles',
+    )
+    description = models.CharField(
+        max_length=100,
     )
 
     class Meta:

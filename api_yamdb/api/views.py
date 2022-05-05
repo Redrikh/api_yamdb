@@ -121,7 +121,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     ]
     pagination_class = PageNumberPagination
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
+    search_fields = ('genre__slug')
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PATCH'):
