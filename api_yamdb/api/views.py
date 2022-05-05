@@ -30,6 +30,7 @@ from .serializers import (
     CommentSerializer,
     UserSerializer,
 )
+from .filters import TitleFilter
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -120,8 +121,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         IsAdminOrReadOnly,
     ]
     pagination_class = PageNumberPagination
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('genre__slug')
+    filterset_class = TitleFilter
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PATCH'):
