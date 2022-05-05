@@ -13,7 +13,6 @@ from .models import User
 
 def generate_confirmation_code() -> str:
     """ Генерация случайного кода. """
-
     letters_and_digits = string.ascii_uppercase + string.digits
     return ''.join(secrets.choice(letters_and_digits) for i in range(6))
 
@@ -21,7 +20,6 @@ def generate_confirmation_code() -> str:
 @api_view(['POST'])
 def register_user(request):
     """ Регистрация нового пользователя. """
-
     serializer = CreateUserSerializer(data=request.data)
     try:
         user = User.objects.get(username=request.data['username'])
@@ -58,5 +56,4 @@ def register_user(request):
 
 class TokenObtainView(TokenObtainPairView):
     """ Получение токена. """
-
     serializer_class = TokenObtainSerializer

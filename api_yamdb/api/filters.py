@@ -4,6 +4,7 @@ from reviews.models import Title
 
 
 class TitleFilter(django_filters.FilterSet):
+    """Класс фильтра для тайтлов."""
     genre = django_filters.CharFilter(field_name='genre', lookup_expr='slug')
     category = django_filters.CharFilter(
         field_name='category',

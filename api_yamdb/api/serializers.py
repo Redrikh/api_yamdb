@@ -72,6 +72,7 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class TitleCreateSerializer(serializers.ModelSerializer):
+    """Сериализатор для создания заголовка."""
     genre = serializers.SlugRelatedField(
         queryset=Genre.objects.all(),
         many=True,

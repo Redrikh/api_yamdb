@@ -18,6 +18,7 @@ CHOICES = (
 
 
 class Genre(models.Model):
+    """Модель для жанра."""
     name = models.CharField(
         max_length=256,
         unique=True,
@@ -32,6 +33,7 @@ class Genre(models.Model):
 
 
 class Category(models.Model):
+    """Модель для категории."""
     name = models.CharField(
         max_length=256,
         unique=True,
@@ -46,6 +48,7 @@ class Category(models.Model):
 
 
 class Title(models.Model):
+    """Модель для заголовка."""
     name = models.CharField(
         max_length=200,
     )
@@ -79,6 +82,7 @@ class Title(models.Model):
 
 
 class GenreTitle(models.Model):
+    """Модель для настройки консоли администратора."""
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
@@ -93,6 +97,7 @@ class GenreTitle(models.Model):
 
 
 class Review(models.Model):
+    """Модель для ревью."""
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
@@ -124,6 +129,7 @@ class Review(models.Model):
 
 
 class Comment(models.Model):
+    """Модель для комментария."""
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,

@@ -35,7 +35,6 @@ from .filters import TitleFilter
 
 class UsersViewSet(viewsets.ModelViewSet):
     """Вьюсет для пользователей."""
-
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [
@@ -72,7 +71,6 @@ class UsersViewSet(viewsets.ModelViewSet):
 
 class CategoryViewSet(viewsets.ModelViewSet):
     """Вьюсет для категорий."""
-
     queryset = Category.objects.all().order_by('id')
     serializer_class = CategorySerializer
     permission_classes = [
@@ -92,7 +90,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 class GenreViewSet(viewsets.ModelViewSet):
     """Вьюсет для жанров."""
-
     queryset = Genre.objects.all().order_by('id')
     serializer_class = GenreSerializer
     permission_classes = [
@@ -112,7 +109,6 @@ class GenreViewSet(viewsets.ModelViewSet):
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для заголовков."""
-
     queryset = Title.objects.all().annotate(
         Avg('reviews__score')
     ).order_by('name')
@@ -131,7 +127,6 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     """Вьюсет для ревью."""
-
     serializer_class = ReviewSerializer
     permission_classes = [
         IsAuthorOrStaff,
@@ -149,7 +144,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     """Вьюсет для комментариев."""
-
     serializer_class = CommentSerializer
     permission_classes = [
         IsAuthorOrStaff,
