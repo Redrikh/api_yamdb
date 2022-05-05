@@ -52,8 +52,13 @@ class GenreSerializer(serializers.ModelSerializer):
 class TitleSerializer(serializers.ModelSerializer):
     """Сериализатор для заголовка."""
 
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all(),
+    )
+
     class Meta:
-        fields = ('id', 'name', 'year',)
+        fields = ('id', 'name', 'year', 'category',)
         model = Title
 
 
