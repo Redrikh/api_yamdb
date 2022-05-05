@@ -141,7 +141,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
 
     def get_queryset(self):
-        return self.get_title().reviews.all()
+        return self.get_title().reviews.all().order_by('id')
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, title=self.get_title())
@@ -163,7 +163,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         review_id = self.kwargs.get('review_id')
         if not title.reviews.filter(id=review_id).exists():
             raise NotFound()
-        return review.comments.filter(review__title_id=title_id)
+        return review.comments.filter(review__title_id=title_id).order_by('id')
 
     def perform_create(self, serializer):
         review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
