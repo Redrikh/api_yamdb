@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
@@ -21,7 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
             'email',
             'first_name',
             'last_name',
-            'role'
+            'role',
         )
         model = User
 
@@ -33,11 +34,27 @@ class UserSerializer(serializers.ModelSerializer):
         return value
 
 
+class UserPatchSerializer(serializers.ModelSerializer):
+    """Сериализатор для пользователя с ограничением изменения роли."""
+
+    class Meta:
+        fields = (
+            'username',
+            'bio',
+            'email',
+            'first_name',
+            'last_name',
+            'role',
+        )
+        read_only_fields = ['role']
+        model = User
+
+
 class CategorySerializer(serializers.ModelSerializer):
     """Сериализатор для категорий."""
 
     class Meta:
-        fields = ('name', 'slug',)
+        fields = ('name', 'slug')
         model = Category
 
 
@@ -45,16 +62,13 @@ class GenreSerializer(serializers.ModelSerializer):
     """Сериализатор для жанров."""
 
     class Meta:
-        fields = ('name', 'slug',)
+        fields = ('name', 'slug')
         model = Genre
 
 
 class TitleSerializer(serializers.ModelSerializer):
     """Сериализатор для заголовка."""
-    rating = serializers.IntegerField(
-        source='reviews__score__avg',
-        read_only=True,
-    )
+    rating = serializers.SerializerMethodField()
     category = CategorySerializer()
     genre = GenreSerializer(many=True)
 
@@ -69,6 +83,12 @@ class TitleSerializer(serializers.ModelSerializer):
             'description',
         )
         model = Title
+
+    def get_rating(self, title):
+        rating = title.reviews.aggregate(Avg('score')).get('score__avg')
+        if not rating:
+            return None
+        return round(rating, 1)
 
 
 class TitleCreateSerializer(serializers.ModelSerializer):
@@ -85,16 +105,18 @@ class TitleCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'category', 'genre', 'description',)
+        fields = ('id', 'name', 'year', 'category', 'genre', 'description')
 
 
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор для ревью."""
     title = serializers.SlugRelatedField(
-        read_only=True, slug_field='name'
+        read_only=True,
+        slug_field='name',
     )
     author = serializers.SlugRelatedField(
-        read_only=True, slug_field='username'
+        read_only=True,
+        slug_field='username',
     )
 
     class Meta:
@@ -116,7 +138,8 @@ class ReviewSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     """Сериализатор для комментариев."""
     author = serializers.SlugRelatedField(
-        read_only=True, slug_field='username'
+        read_only=True,
+        slug_field='username',
     )
 
     class Meta:

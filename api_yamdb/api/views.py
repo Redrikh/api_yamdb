@@ -1,14 +1,13 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, filters, permissions, status
+from rest_framework import viewsets, filters, permissions, status, mixins
+from rest_framework.decorators import action
 from rest_framework.pagination import (
     LimitOffsetPagination,
     PageNumberPagination,
 )
-from rest_framework.exceptions import NotFound
-from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db.models import Avg
 
+from reviews.filters import TitleFilter
 from reviews.models import (
     Category,
     Genre,
@@ -29,8 +28,8 @@ from .serializers import (
     ReviewSerializer,
     CommentSerializer,
     UserSerializer,
+    UserPatchSerializer,
 )
-from .filters import TitleFilter
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -51,25 +50,22 @@ class UsersViewSet(viewsets.ModelViewSet):
         permission_classes=(permissions.IsAuthenticated,),
     )
     def me(self, request):
-        serializer = UserSerializer(request.user)
-        if request.method == 'PATCH':
-            if request.data.get('role') == 'admin':
-                return Response(
-                    serializer.data,
-                    status=status.HTTP_403_FORBIDDEN
-                )
-            serializer = UserSerializer(
-                request.user,
-                data=request.data,
-                partial=True
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = UserPatchSerializer(
+            request.user,
+            data=request.data,
+            partial=True,
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
     """Вьюсет для категорий."""
     queryset = Category.objects.all().order_by('id')
     serializer_class = CategorySerializer
@@ -81,14 +77,13 @@ class CategoryViewSet(viewsets.ModelViewSet):
     search_fields = ('name',)
     lookup_field = 'slug'
 
-    def retrieve(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def update(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
     """Вьюсет для жанров."""
     queryset = Genre.objects.all().order_by('id')
     serializer_class = GenreSerializer
@@ -100,18 +95,10 @@ class GenreViewSet(viewsets.ModelViewSet):
     search_fields = ('name',)
     lookup_field = 'slug'
 
-    def retrieve(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def update(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для заголовков."""
-    queryset = Title.objects.all().annotate(
-        Avg('reviews__score')
-    ).order_by('name')
+    queryset = Title.objects.all().order_by('name')
     serializer_class = TitleSerializer
     permission_classes = [
         IsAdminOrReadOnly,
@@ -151,14 +138,21 @@ class CommentViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
 
     def get_queryset(self):
-        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
-        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
         title_id = self.kwargs.get('title_id')
         review_id = self.kwargs.get('review_id')
-        if not title.reviews.filter(id=review_id).exists():
-            raise NotFound()
+        review = get_object_or_404(
+            Review,
+            pk=review_id,
+            title=title_id,
+        )
         return review.comments.filter(review__title_id=title_id).order_by('id')
 
     def perform_create(self, serializer):
-        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        title_id = self.kwargs.get('title_id')
+        review_id = self.kwargs.get('review_id')
+        review = get_object_or_404(
+            Review,
+            pk=review_id,
+            title=title_id,
+        )
         serializer.save(author=self.request.user, review=review)
