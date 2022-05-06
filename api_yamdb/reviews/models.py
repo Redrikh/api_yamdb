@@ -1,20 +1,12 @@
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
+from datetime import date
 
 from users.models import User
 
-
-CHOICES = (
-    (1, 1),
-    (2, 2),
-    (3, 3),
-    (4, 4),
-    (5, 5),
-    (6, 6),
-    (7, 7),
-    (8, 8),
-    (9, 9),
-    (10, 10),
-)
+THIS_YEAR = date.today().year
+MIN_SCORE = 1
+MAX_SCORE = 10
 
 
 class Genre(models.Model):
@@ -39,7 +31,6 @@ class Category(models.Model):
         unique=True,
     )
     slug = models.SlugField(
-        max_length=50,
         unique=True,
     )
 
@@ -52,7 +43,12 @@ class Title(models.Model):
     name = models.CharField(
         max_length=200,
     )
-    year = models.IntegerField()
+    year = models.PositiveSmallIntegerField(
+        validators=[MaxValueValidator(
+            THIS_YEAR,
+            message='Нельзя выбрать год из будущего!'
+        )]
+    )
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
@@ -65,9 +61,7 @@ class Title(models.Model):
         through_fields=('title', 'genre'),
         related_name='titles',
     )
-    description = models.CharField(
-        max_length=100,
-    )
+    description = models.TextField()
 
     class Meta:
         constraints = [
@@ -110,8 +104,16 @@ class Review(models.Model):
         related_name='reviews',
     )
     score = models.IntegerField(
-        choices=CHOICES,
-    )
+        validators=(
+            MinValueValidator(
+                MIN_SCORE,
+                message='Нельзя выбрать оценку меньше 1!',
+            ),
+            MaxValueValidator(
+                MAX_SCORE,
+                message='Нельзя выбрать оценку больше 10!',
+            )
+        ))
     pub_date = models.DateTimeField(
         auto_now_add=True,
     )
