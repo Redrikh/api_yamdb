@@ -1,37 +1,36 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-ROLE_CHOICES = (
-    ('user', 'пользователь'),
-    ('moderator', 'модератор'),
-    ('admin', 'администратор'),
-)
-
 
 class User(AbstractUser):
     """ Модель пользователя. """
-    email = models.EmailField('E-mail', max_length=254, unique=True,)
-    bio = models.TextField('Биография', null=True, blank=True,)
+
+    USER = 'user'
+    MODERATOR = 'moderator'
+    ADMIN = 'admin'
+    ROLE_CHOICES = [
+        (USER, 'пользователь'),
+        (MODERATOR, 'модератор'),
+        (ADMIN, 'администратор'),
+    ]
+    email = models.EmailField('E-mail', max_length=254, unique=True)
+    bio = models.TextField('Биография', null=True, blank=True)
     role = models.CharField(
         'Тип пользователя',
         max_length=30,
         choices=ROLE_CHOICES,
-        default='user',
+        default=USER,
     )
-    confirmation_code = models.CharField(
-        max_length=6,
-        blank=True
-    )
+    # confirmation_code = models.CharField(
+    #     max_length=40,
+    #     blank=True,
+    # )
 
     def is_admin(self):
-        if self.role == 'admin':
-            return True
-        return False
+        return self.role == self.ADMIN
 
     def is_moderator(self):
-        if self.role == 'moderator':
-            return True
-        return False
+        return self.role == self.MODERATOR
 
     class Meta:
         ordering = ['username']

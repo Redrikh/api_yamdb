@@ -1,16 +1,18 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import User
+User = get_user_model()
 
 
 class CreateUserSerializer(serializers.ModelSerializer):
     """ Сериализатор для создания пользователя. """
 
     class Meta:
-        fields = ('email', 'username',)
+        fields = ('email', 'username')
         model = User
 
     def validate_username(self, value):
@@ -35,10 +37,10 @@ class TokenObtainSerializer(TokenObtainPairSerializer):
         current_user = get_object_or_404(
             User, username=attrs[self.username_field]
         )
-        if current_user.confirmation_code != attrs['confirmation_code']:
+        token = attrs['confirmation_code']
+        if not default_token_generator.check_token(current_user, token):
             raise serializers.ValidationError(
                 'Wrong confirmation code!'
             )
         refresh = RefreshToken.for_user(current_user)
-        # self.get_token(current_user)
         return {'token': str(refresh.access_token)}

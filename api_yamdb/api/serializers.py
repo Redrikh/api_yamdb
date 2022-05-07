@@ -1,14 +1,9 @@
-from django.db.models import Avg
 from django.contrib.auth import get_user_model
+from django.db.models import Avg
 from rest_framework import serializers
 
-from reviews.models import (
-    Category,
-    Genre,
-    Title,
-    Review,
-    Comment,
-)
+from reviews.models import Category, Comment, Genre, Review, Title
+
 User = get_user_model()
 
 
@@ -68,6 +63,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class TitleSerializer(serializers.ModelSerializer):
     """Сериализатор для заголовка."""
+
     rating = serializers.SerializerMethodField()
     category = CategorySerializer()
     genre = GenreSerializer(many=True)
@@ -93,6 +89,7 @@ class TitleSerializer(serializers.ModelSerializer):
 
 class TitleCreateSerializer(serializers.ModelSerializer):
     """Сериализатор для создания заголовка."""
+
     genre = serializers.SlugRelatedField(
         queryset=Genre.objects.all(),
         many=True,
@@ -110,6 +107,7 @@ class TitleCreateSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор для ревью."""
+
     title = serializers.SlugRelatedField(
         read_only=True,
         slug_field='name',
@@ -137,6 +135,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     """Сериализатор для комментариев."""
+
     author = serializers.SlugRelatedField(
         read_only=True,
         slug_field='username',

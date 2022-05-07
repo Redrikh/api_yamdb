@@ -1,59 +1,47 @@
-import secrets
-import string
-
 from django.core.mail import send_mail
+from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .serializers import CreateUserSerializer, TokenObtainSerializer
-from .models import User
 
+User = get_user_model()
 
-def generate_confirmation_code() -> str:
-    """ Генерация случайного кода. """
-    letters_and_digits = string.ascii_uppercase + string.digits
-    return ''.join(secrets.choice(letters_and_digits) for i in range(6))
+def send_registration_mail(user, token):
+    send_mail(
+        'Registration on YaMDb',
+        f'{user.username}, your verification code to receive a token: '
+        f'{token}',
+        None,
+        [user.email],
+        fail_silently=False,
+    )
 
 
 @api_view(['POST'])
 def register_user(request):
-    """ Регистрация нового пользователя. """
+    """Регистрация нового пользователя."""
+
     serializer = CreateUserSerializer(data=request.data)
     try:
-        user = User.objects.get(username=request.data['username'])
+        user = User.objects.get(
+            username=request.data['username'],
+            email=request.data['email'],
+        )
     except Exception:
         user = None
-    if (
-        serializer.is_valid()
-        or (
-            user and user.email == serializer.initial_data['email']
-            and not user.confirmation_code
-        )
-    ):
-        if not user:
-            user = serializer.save()
-        user.confirmation_code = generate_confirmation_code()
-        user.save()
-        send_mail(
-            'Registration on YaMDb',
-            f'Your verification code to receive a token: '
-            f'{user.confirmation_code}',
-            'YaMDb@example.com',
-            [user.email],
-            fail_silently=False,
-        )
-        return Response(
-            serializer.data,
-            status=status.HTTP_200_OK
-        )
-    return Response(
-        serializer.errors,
-        status=status.HTTP_400_BAD_REQUEST
-    )
+    if not user:
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+    token = default_token_generator.make_token(user)
+    send_registration_mail(user, token)
+    return Response(request.data, status=status.HTTP_200_OK)
 
 
 class TokenObtainView(TokenObtainPairView):
-    """ Получение токена. """
+    """Получение токена."""
+
     serializer_class = TokenObtainSerializer

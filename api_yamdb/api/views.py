@@ -1,52 +1,39 @@
+from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, filters, permissions, status, mixins
+from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import (
-    LimitOffsetPagination,
-    PageNumberPagination,
+    LimitOffsetPagination, PageNumberPagination
 )
 from rest_framework.response import Response
 
 from reviews.filters import TitleFilter
-from reviews.models import (
-    Category,
-    Genre,
-    Title,
-    Review,
-)
-from users.models import User
-from .permissions import (
-    IsAdmin,
-    IsAdminOrReadOnly,
-    IsAuthorOrStaff,
-)
+from reviews.models import Category, Genre, Review, Title
+from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrStaff
 from .serializers import (
-    CategorySerializer,
-    GenreSerializer,
-    TitleSerializer,
-    TitleCreateSerializer,
-    ReviewSerializer,
-    CommentSerializer,
-    UserSerializer,
-    UserPatchSerializer,
+    CategorySerializer, CommentSerializer, GenreSerializer,
+    ReviewSerializer, TitleCreateSerializer, TitleSerializer,
+    UserPatchSerializer, UserSerializer
 )
+
+User = get_user_model()
 
 
 class UsersViewSet(viewsets.ModelViewSet):
     """Вьюсет для пользователей."""
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [
         IsAdmin,
     ]
     pagination_class = PageNumberPagination
-    search_fields = ('user__username')
+    search_fields = ('username')
     lookup_field = 'username'
 
     @action(
         detail=False,
         methods=['get', 'patch'],
-        url_path='me',
         permission_classes=(permissions.IsAuthenticated,),
     )
     def me(self, request):
@@ -67,6 +54,7 @@ class CategoryViewSet(
     viewsets.GenericViewSet
 ):
     """Вьюсет для категорий."""
+
     queryset = Category.objects.all().order_by('id')
     serializer_class = CategorySerializer
     permission_classes = [
@@ -85,6 +73,7 @@ class GenreViewSet(
     viewsets.GenericViewSet
 ):
     """Вьюсет для жанров."""
+
     queryset = Genre.objects.all().order_by('id')
     serializer_class = GenreSerializer
     permission_classes = [
@@ -98,6 +87,7 @@ class GenreViewSet(
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для заголовков."""
+
     queryset = Title.objects.all().order_by('name')
     serializer_class = TitleSerializer
     permission_classes = [
@@ -114,6 +104,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     """Вьюсет для ревью."""
+
     serializer_class = ReviewSerializer
     permission_classes = [
         IsAuthorOrStaff,
@@ -131,6 +122,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     """Вьюсет для комментариев."""
+
     serializer_class = CommentSerializer
     permission_classes = [
         IsAuthorOrStaff,
