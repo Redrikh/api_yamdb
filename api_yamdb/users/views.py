@@ -10,6 +10,7 @@ from .serializers import CreateUserSerializer, TokenObtainSerializer
 
 User = get_user_model()
 
+
 def send_registration_mail(user, token):
     send_mail(
         'Registration on YaMDb',
