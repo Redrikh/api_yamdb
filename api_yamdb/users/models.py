@@ -3,7 +3,7 @@ from django.db import models
 
 
 class User(AbstractUser):
-    """ Модель пользователя. """
+    """Модель пользователя."""
 
     USER = 'user'
     MODERATOR = 'moderator'
@@ -21,10 +21,6 @@ class User(AbstractUser):
         choices=ROLE_CHOICES,
         default=USER,
     )
-    # confirmation_code = models.CharField(
-    #     max_length=40,
-    #     blank=True,
-    # )
 
     def is_admin(self):
         return self.role == self.ADMIN

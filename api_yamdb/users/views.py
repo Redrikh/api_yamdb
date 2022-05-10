@@ -13,11 +13,13 @@ User = get_user_model()
 
 def send_registration_mail(user, token):
     send_mail(
-        'Registration on YaMDb',
-        f'{user.username}, your verification code to receive a token: '
-        f'{token}',
-        None,
-        [user.email],
+        subject='Registration on YaMDb',
+        message=(
+            f'{user.username}, your verification code to receive a token: '
+            f'{token}'
+        ),
+        from_email=None,
+        recipient_list=[user.email],
         fail_silently=False,
     )
 
