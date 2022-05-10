@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -17,6 +18,15 @@ from .serializers import (
 )
 
 User = get_user_model()
+
+
+class CreateDeleteListViewSet(
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
+    pass
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -47,12 +57,7 @@ class UsersViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class CategoryViewSet(
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet
-):
+class CategoryViewSet(CreateDeleteListViewSet):
     """Вьюсет для категорий."""
 
     queryset = Category.objects.all().order_by('id')
@@ -66,12 +71,7 @@ class CategoryViewSet(
     lookup_field = 'slug'
 
 
-class GenreViewSet(
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet
-):
+class GenreViewSet(CreateDeleteListViewSet):
     """Вьюсет для жанров."""
 
     queryset = Genre.objects.all().order_by('id')
@@ -88,7 +88,9 @@ class GenreViewSet(
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для заголовков."""
 
-    queryset = Title.objects.all().order_by('name')
+    queryset = Title.objects.all().annotate(
+        Avg('reviews__score')
+    ).order_by('name')
     serializer_class = TitleSerializer
     permission_classes = [
         IsAdminOrReadOnly,
