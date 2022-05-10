@@ -4,9 +4,14 @@ from datetime import date
 
 from users.models import User
 
-THIS_YEAR = date.today().year
 MIN_SCORE = 1
 MAX_SCORE = 10
+
+
+def validate_year(value):
+    this_year = date.today().year
+    if value > this_year:
+        raise ValidationError('Нельзя указывать год из будущего')
 
 
 class Genre(models.Model):
@@ -44,10 +49,7 @@ class Title(models.Model):
         max_length=200,
     )
     year = models.PositiveSmallIntegerField(
-        validators=[MaxValueValidator(
-            THIS_YEAR,
-            message='Нельзя выбрать год из будущего!'
-        )]
+        validators=[validate_year]
     )
     category = models.ForeignKey(
         Category,
